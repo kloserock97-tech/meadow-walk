@@ -8,7 +8,7 @@ const list = JSON.parse(readFileSync(process.argv[2], 'utf8'))
 const out = []
 out.push('# Third-party notices')
 out.push('')
-out.push('Meadow Walk is MIT-licensed (see `LICENSE`). It bundles or builds on the open-source software listed below.')
+out.push('Meadow Walk is released under the PolyForm Noncommercial License 1.0.0 (see `LICENSE`); commercial use needs a separate license (see `COMMERCIAL.md`). It bundles or builds on the open-source software listed below, which keeps its own licenses.')
 out.push('Each component keeps its own license; the full texts follow.')
 out.push('')
 out.push('## Algorithms')

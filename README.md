@@ -123,8 +123,10 @@ and [lil-gui](https://lil-gui.georgealways.com).
 
 ## Licence
 
-MIT — see [LICENSE](LICENSE). Bundled open-source software is listed with its licences in
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Source-available under the [PolyForm Noncommercial License 1.0.0](LICENSE): free for personal,
+study, research and other noncommercial use. **Commercial use needs a paid license**, see
+[COMMERCIAL.md](COMMERCIAL.md) or write to kloserock97@gmail.com. Third-party parts keep their own
+licenses, listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 Nikita Gorbachev · kloserock97@gmail.com ·
 [LinkedIn](https://www.linkedin.com/in/nikita-gorbachev-productdesigner)
