@@ -1,0 +1,129 @@
+:root {
+  --ink: rgba(236, 232, 222, 0.92);
+  --ink-soft: rgba(236, 232, 222, 0.55);
+  --accent: #a9c27a;
+  --sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  margin: 0;
+  height: 100%;
+  background: #0a0908;
+  overflow: hidden;
+}
+
+.stage { position: fixed !important; inset: 0; }
+
+.mw {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* проявление из темноты при загрузке */
+.mw-fade {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: #0a0908;
+}
+
+/* строка над лугом: нижняя треть, по центру */
+.mw-line {
+  position: absolute;
+  left: 50%;
+  bottom: 22vh;
+  transform: translateX(-50%);
+  width: min(90vw, 44ch);
+  margin: 0;
+  text-align: center;
+  font-size: clamp(15px, 1.25vw, 19px);
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  line-height: 1.45;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.75);
+}
+
+.mw-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: lowercase;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.mw-mark {
+  position: absolute;
+  left: 28px;
+  bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mw-name {
+  font-size: 12px;
+  letter-spacing: 0.32em;
+  text-transform: lowercase;
+}
+.mw-sub {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+.mw-sound {
+  position: absolute;
+  right: 22px;
+  bottom: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 0;
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: lowercase;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+.mw-sound:hover, .mw-sound.is-on { color: var(--ink); }
+.mw-sound:focus-visible { outline: 1px solid var(--ink-soft); outline-offset: 2px; }
+.mw-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+  transition: background 0.3s, opacity 0.3s;
+}
+.mw-sound.is-on .mw-dot {
+  background: var(--accent);
+  opacity: 1;
+  animation: mw-pulse 2.4s ease-in-out infinite;
+}
+@keyframes mw-pulse { 50% { transform: scale(1.6); opacity: 0.6; } }
+@media (prefers-reduced-motion: reduce) {
+  .mw-sound.is-on .mw-dot { animation: none; }
+}
+
+@media (max-width: 640px) {
+  .mw-line { bottom: 16vh; }
+  .mw-mark { left: 16px; bottom: 16px; }
+  .mw-sub { display: none; }
+  .mw-sound { right: 8px; bottom: 8px; }
+  .mw-hint { bottom: 64px; }
+}
