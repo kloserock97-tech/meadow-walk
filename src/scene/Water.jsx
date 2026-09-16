@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import { CFG } from '../config.js'
+import { useFrame } from '@react-three/fiber'
 import { U } from './uniforms.js'
+import { live } from './live.js'
 
 // Озерца: почти чёрная гладь на уровне воды, к скользящему углу чуть светлеет.
 export function Water() {
@@ -35,5 +37,6 @@ export function Water() {
     return g
   }, [])
 
+  useFrame(() => material.color.copy(live.water))
   return <mesh geometry={geometry} material={material} frustumCulled={false} />
 }

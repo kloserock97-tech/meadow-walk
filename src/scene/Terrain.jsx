@@ -15,6 +15,7 @@ function patchTerrainColor(shader) {
   Object.assign(shader.uniforms, {
     uHeight: U.uHeight, uCenter: U.uCenter, uSize: U.uSize, uTexel: U.uTexel,
     uTime: U.uTime, uSea: U.uSea,
+    uLush: U.uLush, uMeadow: U.uMeadow, uDry: U.uDry, uRock: U.uRock, uPath: U.uPath,
   })
   shader.vertexShader = shader.vertexShader
     .replace('#include <common>', /* glsl */ `#include <common>
@@ -35,6 +36,7 @@ function patchTerrainColor(shader) {
     .replace('#include <common>', /* glsl */ `#include <common>
       uniform float uTime;
       uniform float uSea;
+      uniform vec3 uLush, uMeadow, uDry, uRock, uPath;
       varying vec2 vWorldXZ;
       varying float vHeight;
       varying float vSlope;
@@ -54,11 +56,12 @@ function patchTerrainColor(shader) {
       float n3 = tdNoise(vWorldXZ * 3.1);
 
       // луг: сочная трава в низинах, светлее на склонах, суше на гребнях
-      vec3 grassDeep  = vec3(0.1, 0.19, 0.05);
-      vec3 grassLight = vec3(0.24, 0.36, 0.1);
-      vec3 grassDry   = vec3(0.42, 0.4, 0.18);
-      vec3 rock       = vec3(0.4, 0.39, 0.36);
-      vec3 mud        = vec3(0.06, 0.05, 0.03);
+      // цвета — с панели (uniform); грязь у воды — тёмный оттенок сухой травы
+      vec3 grassDeep  = uLush;
+      vec3 grassLight = uMeadow;
+      vec3 grassDry   = uDry;
+      vec3 rock       = uRock;
+      vec3 mud        = uDry * vec3(0.14, 0.12, 0.1);
       vec3 col = mix(grassDeep, grassLight, smoothstep(-0.5, 0.6, n1 + 0.45 * n2 + (h - sea) * 0.12));
       col = mix(col, grassDry, smoothstep(0.1, 0.7, n2 * 0.6 + (h - sea - 2.2) * 0.35) * 0.75);
       col *= 0.9 + 0.2 * n3;
@@ -81,7 +84,7 @@ function patchTerrainColor(shader) {
         tideLines += line * gap * (1.0 - fk * 0.3);
       }
       tideLines = clamp(tideLines, 0.0, 1.0);
-      vec3 path = vec3(0.55, 0.47, 0.36) * (0.85 + 0.3 * n3);
+      vec3 path = uPath * (0.85 + 0.3 * n3);
       diffuseColor.rgb = mix(col, path, tideLines * 0.9);
     `)
     .replace('#include <normal_fragment_maps>', /* glsl */ `

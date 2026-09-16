@@ -19,7 +19,7 @@ export function HeightField() {
     })
     rt.texture.generateMipmaps = false
     const mat = new THREE.ShaderMaterial({
-      uniforms: { uCenter: U.uCenter, uSize: U.uSize, uTime: U.uTime },
+      uniforms: { uCenter: U.uCenter, uSize: U.uSize, uTime: U.uTime, uHills: U.uHills, uHillScale: U.uHillScale },
       vertexShader: /* glsl */ `
         varying vec2 vUv;
         void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }

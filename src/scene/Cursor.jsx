@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import { U, WAVE_LIFE, WAVE_REACH, HEAD_RADIUS } from './uniforms.js'
+import { U, HEAD_RADIUS, waveReach } from './uniforms.js'
+import { live } from './live.js'
 import { terrainHeight } from './terrainCPU.js'
 
 // Курсор как «рука» над лугом.
@@ -12,7 +13,8 @@ const HEAD = U.uHead.value
 const WAVES = U.uWaves.value
 const BOUNDS = U.uFieldBounds.value
 const SPAWN_DIST = 1.4 // ед. между центрами волн
-const SPAWN_GAP = 0.17 // с, не чаще — иначе 16 слотов не хватит на WAVE_LIFE
+// не чаще, чем жизнь волны / 15: иначе 16 слотов не хватит и живые волны начнут перезаписываться
+const spawnGap = () => Math.max(0.17, live.waveLife / 15)
 const ray = new THREE.Raycaster()
 const hit = new THREE.Vector3()
 const last = new THREE.Vector3(1e6, 0, 1e6)
@@ -95,12 +97,12 @@ export function Cursor() {
       HEAD.z += (hit.z - HEAD.z) * k
 
       sinceSpawn.current += dt
-      if (last.distanceToSquared(HEAD) > SPAWN_DIST * SPAWN_DIST && sinceSpawn.current > SPAWN_GAP) {
+      if (last.distanceToSquared(HEAD) > SPAWN_DIST * SPAWN_DIST && sinceSpawn.current > spawnGap()) {
         // свободный слот или самый старый
         let s = 0
         for (let i = 0; i < WAVES.length; i++) {
           const a = WAVES[i].w
-          if (a < 0 || a > WAVE_LIFE) { s = i; break }
+          if (a < 0 || a > live.waveLife) { s = i; break }
           if (a > WAVES[s].w) s = i
         }
         WAVES[s].set(HEAD.x, HEAD.y, HEAD.z, 0)
@@ -112,17 +114,18 @@ export function Cursor() {
 
     // возраст волн и общий прямоугольник влияния
     let minX = 1e5, minZ = 1e5, maxX = -1e5, maxZ = -1e5
+    const reach = waveReach()
     for (const wv of WAVES) {
       if (wv.w < 0) continue
       wv.w += dt
-      if (wv.w > WAVE_LIFE) {
+      if (wv.w > live.waveLife) {
         wv.w = -1
         continue
       }
-      minX = Math.min(minX, wv.x - WAVE_REACH)
-      maxX = Math.max(maxX, wv.x + WAVE_REACH)
-      minZ = Math.min(minZ, wv.z - WAVE_REACH)
-      maxZ = Math.max(maxZ, wv.z + WAVE_REACH)
+      minX = Math.min(minX, wv.x - reach)
+      maxX = Math.max(maxX, wv.x + reach)
+      minZ = Math.min(minZ, wv.z - reach)
+      maxZ = Math.max(maxZ, wv.z + reach)
     }
     if (HEAD.w > 0.001) {
       const r = HEAD_RADIUS * 3

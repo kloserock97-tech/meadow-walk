@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { CFG } from '../config.js'
+import { live } from './live.js'
 
 // Единые объекты uniform: подключаются по ссылке во все материалы,
 // поэтому обновлять их достаточно в одном месте.
@@ -19,12 +20,33 @@ export const U = {
   uWaves: { value: Array.from({ length: 16 }, () => new THREE.Vector4(1e5, 0, 1e5, -1)) },
   // прямоугольник, где поле курсора не ноль (minX, minZ, maxX, maxZ): вне его шейдеры не считают цикл
   uFieldBounds: { value: new THREE.Vector4(1e5, 1e5, -1e5, -1e5) },
+
+  // ── значения панели (обновляет Live.jsx каждый кадр) ──
+  uHills: { value: 2.6 }, // высота холмов
+  uHillScale: { value: 1 }, // частота холмов: больше — мельче и чаще
+  uWaveStrength: { value: 1 },
+  uWaveSpeed: { value: 2.6 },
+  uWaveLife: { value: 2.6 },
+  uWindTime: { value: 0 }, // накопленное «время ветра»: смена скорости не даёт скачка фазы
+  uWind: { value: 1 },
+  uBladeScale: { value: new THREE.Vector2(1, 1) }, // высота, ширина
+  uStones: { value: 1 },
+  uStoneSize: { value: 1 },
+  uDustSize: { value: 1 },
+  uLush: { value: live.lush },
+  uMeadow: { value: live.meadow },
+  uDry: { value: live.dry },
+  uRock: { value: live.rock },
+  uPath: { value: live.path },
+  uGrassRoot: { value: live.grassRoot },
+  uGrassTip: { value: live.grassTip },
+  uGrassDry: { value: live.grassDry },
+  uStoneColor: { value: live.stoneColor },
 }
 
-export const WAVE_SPEED = 2.6 // скорость расхождения волны, ед./с
-export const WAVE_LIFE = 2.6 // жизнь волны, с
-export const WAVE_REACH = 0.4 + WAVE_SPEED * WAVE_LIFE + 2.5 // максимальный радиус влияния
 export const HEAD_RADIUS = 4.5
+// максимальный радиус влияния волны при текущих настройках
+export const waveReach = () => 0.4 + live.waveSpeed * live.waveLife + 2.5
 
 // Поле курсора: плавный купол под курсором + расходящиеся волны от следа.
 // Возвращает (push.x, push.z, lift): смещение по земле и подъём, всё без разрывов.
@@ -32,6 +54,9 @@ export const cursorFieldGLSL = /* glsl */ `
 uniform vec4 uHead;
 uniform vec4 uWaves[16];
 uniform vec4 uFieldBounds;
+uniform float uWaveStrength;
+uniform float uWaveSpeed;
+uniform float uWaveLife;
 vec3 cursorField(vec2 p) {
   if (p.x < uFieldBounds.x || p.y < uFieldBounds.y || p.x > uFieldBounds.z || p.y > uFieldBounds.w) return vec3(0.0);
   vec2 push = vec2(0.0);
@@ -46,20 +71,22 @@ vec3 cursorField(vec2 p) {
   for (int i = 0; i < 16; i++) {
     vec4 wv = uWaves[i];
     float age = wv.w;
-    if (age < 0.0 || age > ${WAVE_LIFE.toFixed(2)}) continue;
+    if (age < 0.0 || age > uWaveLife) continue;
     vec2 dv = p - wv.xz;
     float d = length(dv);
-    float radius = 0.4 + age * ${WAVE_SPEED.toFixed(2)};
+    float radius = 0.4 + age * uWaveSpeed;
     float width = 1.0 + age * 0.55;
     float x = (d - radius) / width;
     float ring = exp(-x * x);
     // волна мягко набирается и долго выдыхается
-    float env = smoothstep(0.0, 0.55, age) * (1.0 - smoothstep(0.7, ${WAVE_LIFE.toFixed(2)}, age));
+    float env = smoothstep(0.0, 0.55, age) * (1.0 - smoothstep(0.27 * uWaveLife, uWaveLife, age));
     float k = ring * env * smoothstep(0.0, 1.2, d);
     lift += k;
     push += dv / max(d, 0.6) * k * 0.55;
   }
   // мягкий предел: перекрытие волн не даёт скачков
+  lift *= uWaveStrength;
+  push *= uWaveStrength;
   float liftN = 1.0 - exp(-lift * 1.1);
   float pl = length(push);
   vec2 pushN = pl > 1e-4 ? push / pl * (1.0 - exp(-pl * 1.2)) : vec2(0.0);
@@ -69,7 +96,7 @@ vec3 cursorField(vec2 p) {
 
 // Уровень воды в озерцах: очень медленное колебание, без начала и конца (прогулка бесконечна)
 export function seaLevel(t) {
-  return -1.6 + 0.16 * Math.sin(t * 0.021) + 0.06 * Math.sin(t * 0.37 - 0.6)
+  return live.waterLevel + 0.16 * Math.sin(t * 0.021) + 0.06 * Math.sin(t * 0.37 - 0.6)
 }
 
 // Выборка высоты из текстуры в вершинном шейдере

@@ -12,6 +12,7 @@ import { Dust } from './scene/Dust.jsx'
 import { Effects } from './scene/Effects.jsx'
 import { Overlay } from './Overlay.jsx'
 import { Adaptive } from './scene/Adaptive.jsx'
+import { Live } from './scene/Live.jsx'
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
       >
         <color attach="background" args={['#0a0908']} />
         <fogExp2 attach="fog" args={['#0a0908', 0.012]} />
+        <Live />
         <CameraRig />
         <HeightField />
         <Cursor />

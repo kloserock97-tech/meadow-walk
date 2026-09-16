@@ -2,6 +2,8 @@ import { useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { CFG } from '../config.js'
 import { perf } from './perf.js'
+import { settings } from '../settings.js'
+import { live } from './live.js'
 
 // Автоподстройка качества: меряет средний FPS окнами по 1,5 с и меняет только густоту травы.
 // Разрешение на лету НЕ меняем: setDpr пересоздаёт буферы кадра и постобработки —
@@ -21,11 +23,13 @@ const LOW_FPS = 50
 const HIGH_FPS = 58
 const BLEND_TIME = 1.5 // с, плавный переход густоты
 
+// цель = максимум слоя × доля уровня качества × «grass density» с панели
 function targets(level) {
   const l = LEVELS[level]
+  const density = Math.min(1, Math.max(0.05, live.grassDensity))
   const out = {}
   for (const [name, g] of Object.entries(perf.grass)) {
-    out[name] = Math.max(1, Math.floor(g.max * (name === 'near' ? l.near : l.far)))
+    out[name] = Math.max(1, Math.floor(g.max * (name === 'near' ? l.near : l.far) * density))
   }
   return out
 }
@@ -45,7 +49,8 @@ export function Adaptive() {
       a.started = true
     }
 
-    // плавное приближение густоты к цели
+    // плавное приближение густоты к цели (цель пересчитывается: ползунок густоты действует сразу)
+    a.target = targets(perf.level)
     for (const [name, g] of Object.entries(perf.grass)) {
       const target = a.target[name]
       const cur = g.geometry.instanceCount
@@ -54,7 +59,7 @@ export function Adaptive() {
       g.geometry.instanceCount = cur < target ? Math.min(target, cur + step) : Math.max(target, cur - step)
     }
 
-    if (!CFG.adaptive) return
+    if (!(CFG.adaptive && settings.adaptive)) return
     // первые 4 с — компиляция и досборка шейдеров, окна с рывками занижают FPS
     a.warm += delta
     if (a.warm < 4) return

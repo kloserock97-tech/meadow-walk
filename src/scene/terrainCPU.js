@@ -1,6 +1,7 @@
 // JS-копия terrainHeight из glsl/noise.js — нужна, чтобы найти точку курсора на рельефе
 // и держать камеру над землёй. Хэш целочисленный (Math.imul + >>> 0 повторяют uint32 GLSL),
 // поэтому значения совпадают с шейдером. При изменении формулы в шейдере править и здесь.
+import { live } from './live.js'
 
 // lowbias32 (Chris Wellons, public domain)
 function mix32(x) {
@@ -54,8 +55,8 @@ function fbm(px, py, octaves, lac, norm) {
 }
 
 export function terrainHeight(x, z, t) {
-  let qx = x * 0.03
-  let qy = z * 0.03 * 1.3
+  let qx = x * 0.03 * live.hillScale
+  let qy = z * 0.03 * live.hillScale * 1.3
   const wx = fbm(qx * 1.2 + 1.7 + t * 0.012, qy * 1.2 + 9.2, 3, 2.03, 1.6)
   const wy = fbm(qx * 1.2 + 8.3, qy * 1.2 + 2.8 - t * 0.01, 3, 2.03, 1.6)
   qx += wx * 1.1
@@ -64,5 +65,5 @@ export function terrainHeight(x, z, t) {
   const bands = Math.sin(qy * 4.2 + n * 2.6 + t * 0.04)
   const s = n * 1.8 + bands * 0.55
   const plateau = s / (0.75 + Math.abs(s))
-  return plateau * 2.6 + n * 0.7 + noise(x * 0.21, z * 0.21) * 0.25
+  return (plateau * 2.6 + n * 0.7) * (live.hills / 2.6) + noise(x * 0.21, z * 0.21) * 0.25
 }

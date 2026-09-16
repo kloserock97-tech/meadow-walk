@@ -1,129 +1,76 @@
-:root {
-  --ink: rgba(236, 232, 222, 0.92);
-  --ink-soft: rgba(236, 232, 222, 0.55);
-  --accent: #a9c27a;
-  --sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-}
+/* The page is one canvas and a few lines of text over it. */
 
-* { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: border-box; }
 
 html, body, #root {
   margin: 0;
   height: 100%;
   background: #0a0908;
+  color: #ece8de;
+  font: 400 15px/1.55 "Inter", "Segoe UI", system-ui, sans-serif;
   overflow: hidden;
-}
-
-.stage { position: fixed !important; inset: 0; }
-
-.mw {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  color: var(--ink);
-  font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
 }
 
+.stage { position: fixed !important; inset: 0; touch-action: none; }
+
+.hud {
+  position: fixed; left: clamp(18px, 4vw, 52px); top: clamp(18px, 4vh, 48px);
+  max-width: 34ch; pointer-events: none; text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
+}
+.hud h1 { margin: 0 0 10px; font-size: clamp(30px, 4.4vw, 54px); font-weight: 300; letter-spacing: -0.02em; white-space: nowrap; }
+.hud p { margin: 0 0 10px; font-size: 14px; font-weight: 300; opacity: 0.74; }
+.hint { font-size: 12.5px; opacity: 0.5 !important; }
+kbd {
+  padding: 1px 5px; border: 1px solid currentColor; border-radius: 5px;
+  font: inherit; font-size: 11px; opacity: 0.8;
+}
+
+.credit {
+  position: fixed; left: clamp(18px, 4vw, 52px); bottom: clamp(16px, 3vh, 34px);
+  margin: 0; font-size: 13px;
+}
+.credit a { color: inherit; opacity: 0.6; text-underline-offset: 4px; }
+.credit a:hover { opacity: 1; }
+
+.stats {
+  position: fixed; right: clamp(16px, 3vw, 32px); bottom: clamp(16px, 3vh, 34px);
+  margin: 0; font-size: 12px; font-variant-numeric: tabular-nums; opacity: 0.45; pointer-events: none;
+}
+
+.toast {
+  position: fixed; left: 50%; bottom: 34px; translate: -50% 12px;
+  margin: 0; padding: 9px 16px; border-radius: 999px;
+  background: rgba(20, 20, 18, 0.86); font-size: 13px;
+  opacity: 0; transition: opacity 0.25s ease, translate 0.25s ease; pointer-events: none;
+}
+.toast.is-on { opacity: 1; translate: -50% 0; }
+
+.fallback {
+  position: fixed; inset: 0; display: grid; place-items: center;
+  padding: 24px; text-align: center; background: #0a0908;
+}
+.fallback[hidden] { display: none; }
+
 /* проявление из темноты при загрузке */
-.mw-fade {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background: #0a0908;
+.fade-in { position: fixed; inset: 0; background: #0a0908; pointer-events: none; }
+
+/* необязательные строки над лугом (View → lines over the field) */
+.field-line {
+  position: fixed; left: 50%; bottom: 22vh; translate: -50% 0;
+  width: min(90vw, 44ch); margin: 0; text-align: center;
+  font-size: clamp(15px, 1.25vw, 19px); font-weight: 300; line-height: 1.45;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.75); pointer-events: none;
 }
 
-/* строка над лугом: нижняя треть, по центру */
-.mw-line {
-  position: absolute;
-  left: 50%;
-  bottom: 22vh;
-  transform: translateX(-50%);
-  width: min(90vw, 44ch);
-  margin: 0;
-  text-align: center;
-  font-size: clamp(15px, 1.25vw, 19px);
-  font-weight: 300;
-  letter-spacing: 0.01em;
-  line-height: 1.45;
-  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.75);
-}
+/* ?ui=0 — чистый кадр для скриншотов и превью */
+body.clean .hud, body.clean .credit, body.clean .stats { display: none; }
 
-.mw-hint {
-  position: absolute;
-  left: 50%;
-  bottom: 28px;
-  transform: translateX(-50%);
-  margin: 0;
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: lowercase;
-  color: var(--ink-soft);
-  white-space: nowrap;
-}
+.lil-gui { --widget-height: 22px; --font-size: 12.5px; }
 
-.mw-mark {
-  position: absolute;
-  left: 28px;
-  bottom: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.mw-name {
-  font-size: 12px;
-  letter-spacing: 0.32em;
-  text-transform: lowercase;
-}
-.mw-sub {
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  color: var(--ink-soft);
-}
-
-.mw-sound {
-  position: absolute;
-  right: 22px;
-  bottom: 18px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border: 0;
-  background: none;
-  color: var(--ink-soft);
-  font: inherit;
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: lowercase;
-  pointer-events: auto;
-  cursor: pointer;
-  transition: color 0.3s;
-}
-.mw-sound:hover, .mw-sound.is-on { color: var(--ink); }
-.mw-sound:focus-visible { outline: 1px solid var(--ink-soft); outline-offset: 2px; }
-.mw-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: 0.5;
-  transition: background 0.3s, opacity 0.3s;
-}
-.mw-sound.is-on .mw-dot {
-  background: var(--accent);
-  opacity: 1;
-  animation: mw-pulse 2.4s ease-in-out infinite;
-}
-@keyframes mw-pulse { 50% { transform: scale(1.6); opacity: 0.6; } }
-@media (prefers-reduced-motion: reduce) {
-  .mw-sound.is-on .mw-dot { animation: none; }
-}
-
-@media (max-width: 640px) {
-  .mw-line { bottom: 16vh; }
-  .mw-mark { left: 16px; bottom: 16px; }
-  .mw-sub { display: none; }
-  .mw-sound { right: 8px; bottom: 8px; }
-  .mw-hint { bottom: 64px; }
+@media (max-width: 720px) {
+  .hud p:not(.hint) { display: none; }
+  .hud h1 { font-size: 30px; }
+  .lil-gui.root { --width: 260px; }
+  .field-line { bottom: 16vh; }
 }

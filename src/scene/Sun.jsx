@@ -3,16 +3,24 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { CFG } from '../config.js'
 import { rig } from './CameraRig.jsx'
+import { live } from './live.js'
 
-// Низкое солнце у горизонта (погода первой версии): светит «из глубины» кадра и чуть справа,
-// поэтому тени камней вытягиваются к зрителю и влево.
-const DIR = new THREE.Vector3(0.95, 0.24, -0.45).normalize()
+// Солнце: высота над горизонтом и азимут — с панели (азимут 0° — прямо по ходу прогулки, к −Z).
+// По умолчанию низко, «из глубины» кадра и справа, поэтому тени камней и травы тянутся к зрителю.
+const DIR = new THREE.Vector3()
+const RAD = Math.PI / 180
 
 export function Sun() {
   const light = useRef()
+  const sky = useRef()
+
   useFrame(() => {
     const l = light.current
     if (!l) return
+    const el = THREE.MathUtils.clamp(live.sunHeight, 2, 89) * RAD
+    const az = live.sunAngle * RAD
+    DIR.set(Math.sin(az) * Math.cos(el), Math.sin(el), -Math.cos(az) * Math.cos(el))
+
     const f = rig.focus
     // привязка к текселю теневой карты убирает мерцание теней при полёте
     const step = 90 / CFG.shadowMap
@@ -21,11 +29,14 @@ export function Sun() {
     l.target.position.set(fx, 0, fz)
     l.position.set(fx + DIR.x * 80, DIR.y * 80, fz + DIR.z * 80)
     l.target.updateMatrixWorld()
+    l.color.copy(live.sunColor)
+    l.intensity = live.sunIntensity
+    if (sky.current) sky.current.intensity = live.skyLight
   })
 
   return (
     <>
-      <hemisphereLight args={['#a9a39a', '#1a1816', 0.45]} />
+      <hemisphereLight ref={sky} args={['#a9a39a', '#1a1816', 0.45]} />
       <directionalLight
         ref={light}
         color="#f2ebe1"

@@ -22,6 +22,9 @@ uniform vec2 uBladeH;
 uniform vec2 uBladeW;
 uniform float uTime;
 uniform float uSea;
+uniform float uWindTime;
+uniform float uWind;
+uniform vec2 uBladeScale;
 varying float vGrassY;
 varying float vGrassTint;
 `
@@ -50,13 +53,13 @@ const grassBody = /* glsl */ `
   dens *= 0.62 + 0.38 * smoothstep(-0.35, 0.3, clump);
   float s = step(r1, dens) * edge;
 
-  float bladeH = mix(uBladeH.x, uBladeH.y, r2 * r2) * (0.7 + 0.5 * smoothstep(-0.4, 0.5, clump));
-  float bladeW = mix(uBladeW.x, uBladeW.y, r3);
+  float bladeH = mix(uBladeH.x, uBladeH.y, r2 * r2) * (0.7 + 0.5 * smoothstep(-0.4, 0.5, clump)) * uBladeScale.x;
+  float bladeW = mix(uBladeW.x, uBladeW.y, r3) * uBladeScale.y;
 
   // ветер: бегущая волна + порывы
-  float gust = tdNoise(wxz * 0.045 + vec2(uTime * 0.22, uTime * 0.09));
-  float wave = sin(uTime * 1.25 + dot(wxz, vec2(0.23, 0.14)) + r1 * 2.0);
-  vec2 bend = vec2(0.86, 0.5) * (0.16 * wave + 0.4 * gust + 0.18);
+  float gust = tdNoise(wxz * 0.045 + vec2(uWindTime * 0.22, uWindTime * 0.09));
+  float wave = sin(uWindTime * 1.25 + dot(wxz, vec2(0.23, 0.14)) + r1 * 2.0);
+  vec2 bend = vec2(0.86, 0.5) * (0.16 * wave + 0.4 * gust + 0.18) * uWind;
 
   // курсор: волна пробегает по траве и приминает её от центра
   vec3 field = cursorField(wxz);
@@ -121,8 +124,10 @@ function GrassLayer({ layer }) {
         uGrassCenter: { value: center }, uGrassTile: { value: layer.tile },
         uBladeH: { value: new THREE.Vector2(...layer.height) },
         uBladeW: { value: new THREE.Vector2(...layer.width) },
-        uTime: U.uTime, uSea: U.uSea,
+        uTime: U.uTime, uSea: U.uSea, uWindTime: U.uWindTime, uWind: U.uWind, uBladeScale: U.uBladeScale,
+        uGrassRoot: U.uGrassRoot, uGrassTip: U.uGrassTip, uGrassDry: U.uGrassDry,
         uHead: U.uHead, uWaves: U.uWaves, uFieldBounds: U.uFieldBounds,
+        uWaveStrength: U.uWaveStrength, uWaveSpeed: U.uWaveSpeed, uWaveLife: U.uWaveLife,
       })
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', `#include <common>\n${grassHead}`)
@@ -130,14 +135,14 @@ function GrassLayer({ layer }) {
         .replace('#include <beginnormal_vertex>', 'vec3 objectNormal = vec3(0.0, 1.0, 0.0);')
         .replace('#include <begin_vertex>', grassBody)
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', '#include <common>\nvarying float vGrassY;\nvarying float vGrassTint;')
+        .replace('#include <common>', '#include <common>\nuniform vec3 uGrassRoot, uGrassTip, uGrassDry;\nvarying float vGrassY;\nvarying float vGrassTint;')
         // обратная грань не переворачивает нормаль — иначе стебли чёрные
         .replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\n normal = normalize(vNormal);')
         .replace(
           '#include <color_fragment>',
           /* glsl */ `#include <color_fragment>
-          vec3 gBase = vec3(0.08, 0.15, 0.04);
-          vec3 gTip = mix(vec3(0.25, 0.4, 0.1), vec3(0.45, 0.44, 0.18), vGrassTint);
+          vec3 gBase = uGrassRoot;
+          vec3 gTip = mix(uGrassTip, uGrassDry, vGrassTint);
           // max(): у основания интерполяция даёт −1e-7, а pow от отрицательного = NaN,
           // который bloom размазывает в чёрные вспышки на весь кадр
           diffuseColor.rgb = mix(gBase, gTip, pow(clamp(vGrassY, 0.0, 1.0), 0.45));`

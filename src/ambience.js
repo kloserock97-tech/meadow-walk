@@ -76,15 +76,19 @@ function build() {
 
 export const ambience = {
   on: false,
-  toggle() {
+  // включить/выключить; первый вызов обязан прийти из жеста пользователя (клик, клавиша)
+  set(on) {
     if (!ctx) build()
     if (ctx.state === 'suspended') ctx.resume()
-    this.on = !this.on
+    this.on = on
     const now = ctx.currentTime
     master.gain.cancelScheduledValues(now)
     master.gain.setValueAtTime(master.gain.value, now)
     // плавно, без щелчка
-    master.gain.linearRampToValueAtTime(this.on ? 0.55 : 0, now + (this.on ? 2.5 : 1.2))
-    return this.on
+    master.gain.linearRampToValueAtTime(on ? 0.55 : 0, now + (on ? 2.5 : 1.2))
+    return on
+  },
+  toggle() {
+    return this.set(!this.on)
   },
 }

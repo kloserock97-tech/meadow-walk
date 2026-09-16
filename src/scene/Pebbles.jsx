@@ -15,6 +15,8 @@ uniform vec2 uPebbleCenter;
 uniform float uTile;
 uniform float uTime;
 uniform float uSea;
+uniform float uStones;
+uniform float uStoneSize;
 ${cursorFieldGLSL}
 mat3 tdRotation(vec3 a) {
   float cx = cos(a.x), sx = sin(a.x), cy = cos(a.y), sy = sin(a.y), cz = cos(a.z), sz = sin(a.z);
@@ -51,7 +53,7 @@ const pebbleBody = /* glsl */ `
   float shoreBand = exp(-ds * ds);
   // редкие жилы камушков
   float veins = smoothstep(0.8, 0.97, 1.0 - abs(tdNoise(wxz * 0.085 + 4.0)) * 2.2);
-  float mask = clamp(bands * 0.1 + shoreBand * 0.12 + veins * 0.18 + 0.006, 0.0, 1.0);
+  float mask = clamp((bands * 0.1 + shoreBand * 0.12 + veins * 0.18 + 0.006) * uStones, 0.0, 1.0);
 
   // курсор: камни катятся на гребне волны и оседают, когда она прошла (cursorField)
   vec3 field = cursorField(wxz);
@@ -64,7 +66,7 @@ const pebbleBody = /* glsl */ `
 
   float under = smoothstep(sea - 0.05, sea + 0.08, h);
   float visible = step(r1, mask) * edge * under;
-  float size = mix(0.04, 0.2, pow(fract(r2 * 3.7), 2.6)) * (0.85 + 0.4 * min(bands + shoreBand, 1.0));
+  float size = mix(0.04, 0.2, pow(fract(r2 * 3.7), 2.6)) * (0.85 + 0.4 * min(bands + shoreBand, 1.0)) * uStoneSize;
   float sc = size * visible;
 
   // лёгкий крен на волне, без кувырков
@@ -100,6 +102,8 @@ export function Pebbles() {
       uHeight: U.uHeight, uCenter: U.uCenter, uSize: U.uSize, uTexel: U.uTexel,
       uPebbleCenter: U.uPebbleCenter, uTile: U.uTile, uTime: U.uTime, uSea: U.uSea,
       uHead: U.uHead, uWaves: U.uWaves, uFieldBounds: U.uFieldBounds,
+      uWaveStrength: U.uWaveStrength, uWaveSpeed: U.uWaveSpeed, uWaveLife: U.uWaveLife,
+      uStones: U.uStones, uStoneSize: U.uStoneSize, uStoneColor: U.uStoneColor,
     }
 
     const material = new THREE.MeshStandardMaterial({
@@ -114,10 +118,10 @@ export function Pebbles() {
         .replace('#include <common>', `#include <common>\n${pebbleHead}\nvarying float vShade;`)
         .replace('#include <begin_vertex>', `${pebbleBody}\n vShade = 0.55 + 0.6 * pow(fract(r1 * 17.3 + r2), 1.4);`)
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', '#include <common>\nvarying float vShade;')
+        .replace('#include <common>', '#include <common>\nuniform vec3 uStoneColor;\nvarying float vShade;')
         .replace(
           '#include <color_fragment>',
-          '#include <color_fragment>\n diffuseColor.rgb = vec3(0.45, 0.43, 0.4) * vShade;'
+          '#include <color_fragment>\n diffuseColor.rgb = uStoneColor * vShade;'
         )
     }
     material.customProgramCacheKey = () => 'mw-pebbles'

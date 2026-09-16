@@ -50,10 +50,12 @@ float tdFbm5(vec2 p) {
 
 export const heightGLSL = /* glsl */ `
 ${noiseGLSL}
+uniform float uHills;     // высота холмов (2.6 — исходная)
+uniform float uHillScale; // частота холмов
 // Рельеф: FBM с доменным искажением + поперечные гряды.
 // Мягкая сигмоида даёт пологие верхушки и более крутые склоны к низинам.
 float terrainHeight(vec2 p, float t) {
-  vec2 q = p * 0.03;
+  vec2 q = p * 0.03 * uHillScale;
   q.y *= 1.3;
   vec2 w = vec2(
     tdFbm3(q * 1.2 + vec2(1.7, 9.2) + vec2(t * 0.012, 0.0)),
@@ -64,6 +66,6 @@ float terrainHeight(vec2 p, float t) {
   float bands = sin(q.y * 4.2 + n * 2.6 + t * 0.04);
   float s = n * 1.8 + bands * 0.55;
   float plateau = s / (0.75 + abs(s));
-  return plateau * 2.6 + n * 0.7 + tdNoise(p * 0.21) * 0.25;
+  return (plateau * 2.6 + n * 0.7) * (uHills / 2.6) + tdNoise(p * 0.21) * 0.25;
 }
 `
