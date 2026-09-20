@@ -23,5 +23,5 @@
   },
   "license": "SEE LICENSE IN LICENSE",
   "author": "Nikita Gorbachev",
-  "description": "Endless walk over a windy meadow — React Three Fiber, GPU grass and a cursor that sends soft waves through the field."
+  "description": "Endless walk over a windy meadow: React Three Fiber, GPU grass and a cursor that sends soft waves through the field."
 }

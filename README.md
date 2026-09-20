@@ -1,8 +1,8 @@
 # Meadow Walk
 
-An endless, unhurried flight over a windy meadow at dusk. Half a million blades of grass, a few ponds,
-paths worn into the hills, and a cursor that sends soft waves rolling through the field. Every number
-that shapes it is on a slider.
+An endless, unhurried flight over a windy meadow at dusk. There are half a million blades of grass, a
+few ponds and paths worn into the hills, and the cursor sends soft waves rolling through the field.
+Every number that shapes it is on a slider.
 
 **Live demo:** https://kloserock97-tech.github.io/meadow-walk/
 
@@ -16,10 +16,10 @@ every pebble, the shadow pass and the camera. Asking it directly would mean eval
 million times per pass, so it is asked once. Each frame the height of the area around the camera is drawn
 into a half-float texture, and all the shaders only read from it.
 
-The camera needs the ground too, to stay above the hills and to find where the cursor points, so the same
-function lives once more in JavaScript. The noise is built on an integer hash rather than the usual
-`fract(sin(...))`, and integer arithmetic in JavaScript (`Math.imul`, `>>> 0`) reproduces the GPU
-bit for bit. The cursor lands exactly on the blade it is over.
+The camera needs the ground too, to stay above the hills and to find where the cursor points, so the
+same function lives once more in JavaScript. The noise is built on an integer hash. Integer arithmetic
+in JavaScript (`Math.imul`, `>>> 0`) reproduces the GPU bit for bit, which the usual `fract(sin(...))`
+cannot do. The cursor lands on the very blade it is over.
 
 ## The grass
 
@@ -28,27 +28,27 @@ Two layers of instanced blades, both placed entirely in the vertex shader:
 - **near:** 360,000 tapered blades of five vertices on a 26×26 patch in front of the camera, receiving shadows,
 - **far:** 140,000 single triangles on a 70×70 patch, wider and cheaper, without shadows.
 
-Further away the grass is only a colour of the ground, and the fog does the rest. Each blade wraps around
-the camera with `mod`, so the patches follow the walk without any bookkeeping. A blade skips water and
-worn paths, grows in clumps, and bends under a travelling wave plus slow gusts of noise. The wind keeps its
-own clock, so changing its speed changes the tempo instead of making the field jump.
+Further away the grass is only a colour of the ground, and the fog does the rest. Each blade wraps
+around the camera with `mod`, so the patches follow the walk without any bookkeeping. A blade skips
+water and worn paths, grows in clumps, and bends under a travelling wave plus slow gusts of noise. The
+wind keeps its own clock, so changing its speed changes the tempo and the field does not jump.
 
 ## The cursor
 
 Moving the cursor leaves a trail of points. Each point sends out a ring that grows, fades in and slowly
-breathes out; grass, pebbles and dust all read one shared field built from those rings. On the crest a
+breathes out. Grass, pebbles and dust all read one shared field built from those rings. On the crest a
 pebble lifts a little and slides outwards, the grass lies down, the dust rises, and when the ring has
-passed everything settles back where it was. Nothing is simulated, so nothing drifts: positions are a pure
-function of the rings that are still alive.
+passed everything settles back where it was. Positions are a pure function of the rings that are still
+alive, so nothing can drift.
 
 ## The look
 
 A low sun and long shadows, a near-black sky, and a film-like finish: exposure, depth of field on the
 foreground, bloom, a little lens fringing, ACES tone mapping, grading, a mid-tone grain and a vignette.
-The grain is written by hand: stock noise redraws white noise over the whole frame every monitor refresh,
-which reads as flicker on a dark image. Here it lives only in the mid-tones and changes 24 times a second,
-like film. The wind you can switch on is synthesised with Web Audio from filtered noise; there are no
-audio files.
+The grain is written by hand: stock noise redraws white noise over the whole frame every monitor
+refresh, which reads as flicker on a dark image. Here it lives only in the mid-tones and changes 24
+times a second, like film. The wind you can switch on is synthesised with Web Audio from filtered noise,
+and the project ships no audio files.
 
 ## Controls
 
@@ -66,8 +66,8 @@ audio files.
 `H` hides the panel, `Space` freezes time, `M` switches the wind on and off, move the cursor over the grass.
 
 Presets: dusk, spring, autumn, moor, frost. **Copy link to this meadow** writes the whole setup into the
-address bar, so a version you like can be sent as a plain URL. Sliders ease into their new values, so the
-hills flow into shape instead of snapping.
+address bar, so a version you like can be sent as a plain URL. Sliders ease into their new values, so
+the hills flow into their new shape.
 
 | spring | autumn | moor | frost |
 | --- | --- | --- | --- |
@@ -75,11 +75,12 @@ hills flow into shape instead of snapping.
 
 ## Performance
 
-The grass is the bill. On an Intel Arc integrated GPU the full field runs at about 75 fps at 2049×1078
-and the next quality step at about 95. Quality adapts by itself: frame rate is measured in 1.5-second
-windows, and when it drops the grass thins out gradually over a second and a half. Resolution is never
-changed while the page is running, because reallocating the render targets costs a visible hitch. The
-**density** slider and `?level=0..5` do the same by hand; `?q=low` is a lighter start for weak machines.
+Almost all of the frame time goes into the grass. On an Intel Arc integrated GPU the full field runs at
+about 75 fps at 2049×1078 and the next quality step at about 95. Quality adapts by itself: frame rate is
+measured in 1.5-second windows, and when it drops the grass thins out gradually over a second and a
+half. Resolution is never changed while the page is running, because reallocating the render targets
+costs a visible hitch. The **density** slider and `?level=0..5` do the same by hand. `?q=low` is a
+lighter start for weak machines.
 
 ## Running it
 
@@ -113,13 +114,14 @@ switch post-processing off, `?hide=grass,pebbles,dust,water` and `?shadows=0` re
 
 ## Prior art
 
-Instanced grass bent by wind in the vertex shader is a well-documented real-time technique, popularised by
-the Ghost of Tsushima GDC talk. The dark palette, pebbles and contour-line paths began as a mood study of
-immersive WebGL storytelling sites such as Chateau Oublié by Unseen Studio. The scene, camera, interface,
-noise, shaders, sound and all of the code here are my own work, written from scratch; the only borrowed
-piece is the public-domain lowbias32 integer hash by Chris Wellons. Built with [three.js](https://threejs.org),
-[React Three Fiber](https://r3f.docs.pmnd.rs), [postprocessing](https://github.com/pmndrs/postprocessing)
-and [lil-gui](https://lil-gui.georgealways.com).
+Instanced grass bent by wind in the vertex shader is a well-documented real-time technique, popularised
+by the Ghost of Tsushima GDC talk. The dark palette, pebbles and contour-line paths began as a mood
+study of immersive WebGL storytelling sites such as Chateau Oublié by Unseen Studio. The scene, camera,
+interface, noise, shaders, sound and all of the code here are my own work, written from scratch. The
+only borrowed piece is the public-domain lowbias32 integer hash by Chris Wellons. Built with
+[three.js](https://threejs.org), [React Three Fiber](https://r3f.docs.pmnd.rs),
+[postprocessing](https://github.com/pmndrs/postprocessing) and
+[lil-gui](https://lil-gui.georgealways.com).
 
 ## Licence
 
