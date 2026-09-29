@@ -2,21 +2,12 @@
 // Высота считается один раз за кадр в карту высот (HeightField),
 // рельеф и камни её только читают. JS-копия — scene/terrainCPU.js (совпадает бит в бит).
 //
-// Хэш — целочисленный: перемешивание lowbias32 (Chris Wellons, hash-prospector, public domain),
-// ячейка сетки сводится к одному uint32. Градиентный шум с квинтик-сглаживанием
-// и FBM с поворотом октав написаны здесь заново, свои константы.
+// Хэш — свой целочисленный (Hash Kit), ячейка сетки сводится к одному uint32.
+// Градиентный шум с квинтик-сглаживанием и FBM с поворотом октав написаны здесь заново, свои константы.
 export const noiseGLSL = /* glsl */ `
-uint mdMix(uint x) {
-  x ^= x >> 16u;
-  x *= 0x7feb352du;
-  x ^= x >> 15u;
-  x *= 0x846ca68bu;
-  x ^= x >> 16u;
-  return x;
-}
-uint mdCell(ivec2 c) {
-  return mdMix((uint(c.x) * 0x0001f35bu) ^ mdMix(uint(c.y) + 0x9e3779b9u));
-}
+// Hash Kit (our own hash, see shelf/items/hash-kit)
+uint mdMix(uint x) { x ^= x >> 16u; x *= 0x3f9c86cbu; x ^= x >> 14u; x *= 0x1ae9dacfu; x ^= x >> 15u; return x; }
+uint mdCell(ivec2 c) { return mdMix(uint(c.x) + mdMix(uint(c.y) + 0xb31c96c9u)); }
 // градиент ячейки: два 16-битных куска хэша → вектор в квадрате [-1, 1]
 vec2 mdGrad(ivec2 c) {
   uint h = mdCell(c);

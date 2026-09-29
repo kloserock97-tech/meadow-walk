@@ -11,18 +11,12 @@ const grainFragment = /* glsl */ `
 uniform float amount;
 uniform float rate;
 
-// целочисленное перемешивание lowbias32 (Chris Wellons, public domain)
-uint grainMix(uint x) {
-  x ^= x >> 16u;
-  x *= 0x7feb352du;
-  x ^= x >> 15u;
-  x *= 0x846ca68bu;
-  x ^= x >> 16u;
-  return x;
-}
+// Hash Kit (our own hash, see shelf/items/hash-kit)
+uint mdMix(uint x) { x ^= x >> 16u; x *= 0x3f9c86cbu; x ^= x >> 14u; x *= 0x1ae9dacfu; x ^= x >> 15u; return x; }
+// зерно пикселя в кадре плёнки: 0…1 из старших 24 бит хэша
 float grainHash(uvec2 p, uint frame) {
-  uint h = grainMix(p.x ^ grainMix(p.y ^ grainMix(frame)));
-  return float(h & 0xffffu) / 65535.0;
+  uint h = mdMix(p.x + mdMix(p.y + mdMix(frame + 0xb31c96c9u)));
+  return float(h >> 8) * (1.0 / 16777216.0);
 }
 
 void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {

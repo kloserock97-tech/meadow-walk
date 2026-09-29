@@ -5,7 +5,6 @@ Each component keeps its own license; the full texts follow.
 
 ## Algorithms
 
-- **lowbias32** integer hash — Chris Wellons, [hash-prospector](https://github.com/skeeto/hash-prospector), released into the public domain (Unlicense). Used in `src/glsl/noise.js`, `src/scene/terrainCPU.js`, `src/scene/Grain.js`.
 - Gradient noise, fractal Brownian motion and domain warping are long-established techniques; the implementation and constants in this repository are original.
 
 ## Packages

@@ -3,18 +3,18 @@
 // поэтому значения совпадают с шейдером. При изменении формулы в шейдере править и здесь.
 import { live } from './live.js'
 
-// lowbias32 (Chris Wellons, public domain)
+// Hash Kit (our own hash, see shelf/items/hash-kit)
 function mix32(x) {
   x ^= x >>> 16
-  x = Math.imul(x, 0x7feb352d)
+  x = Math.imul(x, 0x3f9c86cb)
+  x ^= x >>> 14
+  x = Math.imul(x, 0x1ae9dacf)
   x ^= x >>> 15
-  x = Math.imul(x, 0x846ca68b)
-  x ^= x >>> 16
   return x >>> 0
 }
 
 function cell(ix, iy) {
-  return mix32(Math.imul(ix | 0, 0x0001f35b) ^ mix32(((iy | 0) + 0x9e3779b9) >>> 0))
+  return mix32(((ix | 0) + mix32(((iy | 0) + 0xb31c96c9) >>> 0)) >>> 0)
 }
 
 function noise(px, py) {

@@ -117,8 +117,8 @@ switch post-processing off, `?hide=grass,pebbles,dust,water` and `?shadows=0` re
 Instanced grass bent by wind in the vertex shader is a well-documented real-time technique, popularised
 by the Ghost of Tsushima GDC talk. The dark palette, pebbles and contour-line paths began as a mood
 study of immersive WebGL storytelling sites such as Chateau Oublié by Unseen Studio. The scene, camera,
-interface, noise, shaders, sound and all of the code here are my own work, written from scratch. The
-only borrowed piece is the public-domain lowbias32 integer hash by Chris Wellons. Built with
+interface, noise, shaders, sound and all of the code here are my own work, written from scratch. That
+includes the integer hash under the noise, which comes from my own Hash Kit. Built with
 [three.js](https://threejs.org), [React Three Fiber](https://r3f.docs.pmnd.rs),
 [postprocessing](https://github.com/pmndrs/postprocessing) and
 [lil-gui](https://lil-gui.georgealways.com).
