@@ -12,7 +12,8 @@ html, body, #root {
   -webkit-font-smoothing: antialiased;
 }
 
-.stage { position: fixed !important; inset: 0; touch-action: none; }
+/* the scene fills the window above the settings sheet (panel/panel.js sets --pnl-sheet); R3F follows its box */
+.stage { position: fixed !important; inset: 0 0 auto; height: calc(100% - var(--pnl-sheet)) !important; touch-action: none; }
 
 .hud {
   position: fixed; left: clamp(18px, 4vw, 52px); top: clamp(18px, 4vh, 48px);
@@ -66,11 +67,8 @@ kbd {
 /* ?ui=0 — чистый кадр для скриншотов и превью */
 body.clean .hud, body.clean .credit, body.clean .stats { display: none; }
 
-.lil-gui { --widget-height: 22px; --font-size: 12.5px; }
-
 @media (max-width: 720px) {
   .hud p:not(.hint) { display: none; }
   .hud h1 { font-size: 30px; }
-  .lil-gui.root { --width: 260px; }
   .field-line { bottom: 16vh; }
 }

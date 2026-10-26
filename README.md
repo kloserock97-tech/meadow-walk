@@ -65,6 +65,10 @@ and the project ships no audio files.
 
 `H` hides the panel, `Space` freezes time, `M` switches the wind on and off, move the cursor over the grass.
 
+The settings sit in a sheet at the bottom of the page, one tab per group. Drag anywhere on a row to change a value,
+double-click it to type one, or use the arrow keys. The buttons in the top right switch between a light and a dark
+panel, fold the sheet and reset everything.
+
 Presets: dusk, spring, autumn, moor, frost. **Copy link to this meadow** writes the whole setup into the
 address bar, so a version you like can be sent as a plain URL. Sliders ease into their new values, so
 the hills flow into their new shape.
@@ -120,8 +124,7 @@ study of immersive WebGL storytelling sites such as Chateau Oublié by Unseen St
 interface, noise, shaders, sound and all of the code here are my own work, written from scratch. That
 includes the integer hash under the noise, which comes from my own Hash Kit. Built with
 [three.js](https://threejs.org), [React Three Fiber](https://r3f.docs.pmnd.rs),
-[postprocessing](https://github.com/pmndrs/postprocessing) and
-[lil-gui](https://lil-gui.georgealways.com).
+and [postprocessing](https://github.com/pmndrs/postprocessing). The settings panel (`src/panel/`) is my own too.
 
 ## Licence
 

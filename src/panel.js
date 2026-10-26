@@ -1,11 +1,11 @@
-import GUI from 'lil-gui'
+import GUI from './panel/panel.js'
 import { DEFAULTS, PRESETS, settings, writeUrl } from './settings.js'
 import { ambience } from './ambience.js'
 import { perf } from './scene/perf.js'
 
 // Панель: каждый ползунок пишет в settings, сцена подхватывает сама (live.js плавно догоняет).
 export function createPanel() {
-  const gui = new GUI({ title: 'Meadow Walk', width: 310 })
+  const gui = new GUI({ title: 'Meadow Walk', repo: 'https://github.com/kloserock97-tech/meadow-walk', theme: 'dark', onReset: () => load(DEFAULTS) })
   const save = () => writeUrl()
 
   const walk = gui.addFolder('Walk')
@@ -73,9 +73,6 @@ export function createPanel() {
   view.add(settings, 'sound').name('wind sound').onChange((on) => ambience.set(on)).listen()
   view.add(settings, 'adaptive').name('adaptive quality').onChange(save)
 
-  // папки закрыты, кроме первой: панель не закрывает полэкрана
-  for (const folder of gui.folders.slice(1)) folder.close()
-
   const actions = {
     preset: 'dusk',
     copyLink: async () => {
@@ -95,13 +92,11 @@ export function createPanel() {
         toast('Copy failed')
       }
     },
-    reset: () => load(DEFAULTS),
   }
 
   gui.add(actions, 'preset', Object.keys(PRESETS)).name('preset').onChange((key) => load({ ...DEFAULTS, ...PRESETS[key] }))
   gui.add(actions, 'copyLink').name('copy link to this meadow')
   gui.add(actions, 'copySettings').name('copy settings as JSON')
-  gui.add(actions, 'reset').name('reset')
 
   function load(next) {
     const sound = settings.sound // звук — не часть «вида», пресет его не трогает

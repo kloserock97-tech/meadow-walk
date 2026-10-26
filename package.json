@@ -11,7 +11,6 @@
   "dependencies": {
     "@react-three/fiber": "^9.6.1",
     "@react-three/postprocessing": "^3.0.4",
-    "lil-gui": "^0.21.0",
     "postprocessing": "^6.39.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
